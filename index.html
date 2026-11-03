@@ -1,903 +1,368 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex, nofollow" />
-    <title>Price tracker: manage links</title>
-    <style>
-      :root {
-        --bg: #f4f4f5;
-        --card: #ffffff;
-        --text: #18181b;
-        --muted: #71717a;
-        --line: #e4e4e7;
-        --accent: #18181b;
-        --accent-text: #ffffff;
-        --input: #ffffff;
-        --green: #16a34a;
-        --red: #dc2626;
-        --amber: #d97706;
-        color-scheme: light dark;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #0f0f10;
-          --card: #18181b;
-          --text: #f4f4f5;
-          --muted: #a1a1aa;
-          --line: #2e2e33;
-          --accent: #f4f4f5;
-          --accent-text: #18181b;
-          --input: #0f0f10;
-        }
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font:
-          15px/1.45 -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          Roboto,
-          Helvetica,
-          Arial,
-          sans-serif;
-      }
-      .wrap {
-        max-width: 760px;
-        margin: 0 auto;
-        padding: 20px 14px 120px;
-      }
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      h1 {
-        font-size: 20px;
-        margin: 0;
-      }
-      .head-actions {
-        display: flex;
-        gap: 8px;
-      }
-      .card {
-        background: var(--card);
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: 14px;
-        margin-bottom: 12px;
-      }
-      .hidden {
-        display: none !important;
-      }
-      .muted {
-        color: var(--muted);
-      }
-      .small {
-        font-size: 12px;
-      }
-      .warn {
-        color: var(--amber);
-        font-weight: 600;
-      }
-      label {
-        display: block;
-        font-size: 12px;
-        color: var(--muted);
-        margin: 0 0 4px;
-      }
-      input[type="text"],
-      input[type="url"],
-      input[type="number"],
-      input[type="password"] {
-        width: 100%;
-        padding: 9px 10px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--input);
-        color: var(--text);
-        font: inherit;
-      }
-      input:focus {
-        outline: 2px solid var(--accent);
-        outline-offset: -1px;
-      }
-      button {
-        font: inherit;
-        font-weight: 600;
-        border: 0;
-        border-radius: 8px;
-        padding: 9px 14px;
-        cursor: pointer;
-        background: var(--accent);
-        color: var(--accent-text);
-      }
-      button.ghost {
-        background: transparent;
-        color: var(--text);
-        border: 1px solid var(--line);
-      }
-      button.danger {
-        background: transparent;
-        color: var(--red);
-        border: 1px solid var(--line);
-        padding: 6px 10px;
-      }
-      button:disabled {
-        opacity: 0.5;
-        cursor: default;
-      }
-      .grid {
-        display: grid;
-        gap: 10px;
-      }
-      .add-grid {
-        grid-template-columns: 1fr 1fr 110px auto;
-        align-items: end;
-      }
-      .add-url {
-        grid-column: 1 / -1;
-      }
-      @media (max-width: 600px) {
-        .add-grid {
-          grid-template-columns: 1fr 1fr;
-        }
-        .add-grid button {
-          grid-column: 1/-1;
-        }
-      }
-      .row {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 6px 14px;
-      }
-      .row.paused {
-        opacity: 0.55;
-      }
-      .row .name {
-        font-weight: 600;
-      }
-      .url {
-        font-size: 12px;
-        color: var(--muted);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        display: block;
-        text-decoration: none;
-      }
-      .price-box {
-        text-align: right;
-        min-width: 120px;
-      }
-      .price {
-        font-weight: 700;
-        font-size: 16px;
-      }
-      .price.hit {
-        color: var(--green);
-      }
-      .price.none {
-        font-weight: 500;
-        font-size: 13px;
-        color: var(--muted);
-      }
-      .controls {
-        grid-column: 1 / -1;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        flex-wrap: wrap;
-        margin-top: 4px;
-      }
-      .controls .t {
-        width: 120px;
-      }
-      .check {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        color: var(--text);
-        margin: 0;
-      }
-      details {
-        grid-column: 1 / -1;
-        font-size: 13px;
-      }
-      summary {
-        cursor: pointer;
-        color: var(--muted);
-      }
-      .adv {
-        display: grid;
-        gap: 10px;
-        margin-top: 8px;
-      }
-      .savebar {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: var(--card);
-        border-top: 1px solid var(--line);
-        padding: 12px 14px;
-        display: none;
-      }
-      .savebar.show {
-        display: block;
-      }
-      .savebar .in {
-        max-width: 760px;
-        margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-      }
-      #toast {
-        position: fixed;
-        left: 50%;
-        bottom: 76px;
-        transform: translateX(-50%);
-        background: var(--accent);
-        color: var(--accent-text);
-        padding: 10px 16px;
-        border-radius: 8px;
-        font-size: 14px;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s;
-        max-width: 90vw;
-        text-align: center;
-      }
-      #toast.show {
-        opacity: 1;
-      }
-      #toast.err {
-        background: var(--red);
-        color: #fff;
-      }
-      #toast.ok {
-        background: var(--green);
-        color: #fff;
-      }
-      ol {
-        margin: 8px 0 0 18px;
-        padding: 0;
-      }
-      li {
-        margin: 3px 0;
-      }
-      code {
-        background: var(--bg);
-        padding: 1px 5px;
-        border-radius: 4px;
-        font-size: 12px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <header>
-        <h1>Price tracker</h1>
-        <div class="head-actions">
-          <button id="runBtn" class="ghost" title="Start a check on GitHub now">
-            Run now
-          </button>
-          <button id="settingsBtn" class="ghost">Settings</button>
-        </div>
-      </header>
-
-      <section id="settings" class="card hidden">
-        <div class="grid" style="grid-template-columns: 1fr 1fr 120px">
-          <div>
-            <label for="cfgOwner">GitHub user / org</label
-            ><input id="cfgOwner" type="text" placeholder="your-username" />
-          </div>
-          <div>
-            <label for="cfgRepo">Repository</label
-            ><input id="cfgRepo" type="text" placeholder="price-tracker" />
-          </div>
-          <div>
-            <label for="cfgBranch">Branch</label
-            ><input id="cfgBranch" type="text" value="main" />
-          </div>
-          <div style="grid-column: 1/-1">
-            <label for="cfgToken">Access token</label
-            ><input
-              id="cfgToken"
-              type="password"
-              placeholder="github_pat_..."
-              autocomplete="off"
-            />
-          </div>
-        </div>
-        <div style="display: flex; gap: 8px; margin-top: 12px">
-          <button id="cfgSave">Save settings</button>
-          <button id="cfgClear" class="ghost">Forget token</button>
-        </div>
-        <details open style="margin-top: 12px">
-          <summary>How to create the token (once)</summary>
-          <ol class="small">
-            <li>
-              GitHub → Settings → Developer settings → Personal access tokens →
-              <b>Fine-grained tokens</b> → Generate new token.
-            </li>
-            <li>
-              Repository access: <b>Only select repositories</b> and pick just
-              this repo.
-            </li>
-            <li>
-              Permissions: <b>Contents: Read and write</b>. For the Run now
-              button also <b>Actions: Read and write</b>.
-            </li>
-            <li>
-              Paste it above. It is stored only in this browser (localStorage)
-              and sent only to api.github.com.
-            </li>
-          </ol>
-        </details>
-      </section>
-
-      <section class="card">
-        <form id="addForm" class="grid add-grid" autocomplete="off">
-          <div class="add-url">
-            <label for="newUrl">Product link</label
-            ><input
-              id="newUrl"
-              type="url"
-              placeholder="https://shop.com/product/..."
-              required
-            />
-          </div>
-          <div>
-            <label for="newName">Name (optional)</label
-            ><input
-              id="newName"
-              type="text"
-              placeholder="Taken from the link if empty"
-            />
-          </div>
-          <div>
-            <label for="newTarget">Target price (optional)</label
-            ><input
-              id="newTarget"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="e.g. 120"
-            />
-          </div>
-          <div></div>
-          <button type="submit">Add</button>
-        </form>
-      </section>
-
-      <section id="list"></section>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Price tracker: manage links</title>
+<style>
+  :root {
+    --bg:#f4f4f5; --card:#ffffff; --text:#18181b; --muted:#71717a; --line:#e4e4e7;
+    --accent:#18181b; --accent-text:#ffffff; --input:#ffffff;
+    --green:#16a34a; --red:#dc2626; --amber:#d97706;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f10; --card:#18181b; --text:#f4f4f5; --muted:#a1a1aa; --line:#2e2e33;
+            --accent:#f4f4f5; --accent-text:#18181b; --input:#0f0f10; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 14px 120px; }
+  header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:10px; flex-wrap:wrap; }
+  h1 { font-size:20px; margin:0; }
+  .head-actions { display:flex; gap:8px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:12px; }
+  .hidden { display:none !important; }
+  .muted { color:var(--muted); } .small { font-size:12px; }
+  .warn { color:var(--amber); font-weight:600; }
+  label { display:block; font-size:12px; color:var(--muted); margin:0 0 4px; }
+  input[type=text], input[type=url], input[type=number], input[type=password] {
+    width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:8px;
+    background:var(--input); color:var(--text); font:inherit; }
+  input:focus { outline:2px solid var(--accent); outline-offset:-1px; }
+  button { font:inherit; font-weight:600; border:0; border-radius:8px; padding:9px 14px; cursor:pointer;
+           background:var(--accent); color:var(--accent-text); }
+  button.ghost { background:transparent; color:var(--text); border:1px solid var(--line); }
+  button.danger { background:transparent; color:var(--red); border:1px solid var(--line); padding:6px 10px; }
+  button:disabled { opacity:.5; cursor:default; }
+  .grid { display:grid; gap:10px; }
+  .add-grid { grid-template-columns: 1fr 1fr 110px auto; align-items:end; }
+  .add-url { grid-column: 1 / -1; }
+  @media (max-width:600px){ .add-grid{ grid-template-columns:1fr 1fr; } .add-grid button{ grid-column:1/-1; } }
+  .row { display:grid; grid-template-columns: 1fr auto; gap:6px 14px; }
+  .row.paused { opacity:.55; }
+  .row .name { font-weight:600; }
+  .url { font-size:12px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; text-decoration:none; }
+  .price-box { text-align:right; min-width:120px; }
+  .price { font-weight:700; font-size:16px; }
+  .price.hit { color:var(--green); }
+  .price.none { font-weight:500; font-size:13px; color:var(--muted); }
+  .controls { grid-column:1 / -1; display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:4px; }
+  .controls .t { width:120px; }
+  .check { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text); margin:0; }
+  details { grid-column:1 / -1; font-size:13px; }
+  summary { cursor:pointer; color:var(--muted); }
+  .adv { display:grid; gap:10px; margin-top:8px; }
+  .savebar { position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1px solid var(--line);
+             padding:12px 14px; display:none; }
+  .savebar.show { display:block; }
+  .savebar .in { max-width:760px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  #toast { position:fixed; left:50%; bottom:76px; transform:translateX(-50%); background:var(--accent); color:var(--accent-text);
+           padding:10px 16px; border-radius:8px; font-size:14px; opacity:0; pointer-events:none; transition:opacity .2s; max-width:90vw; text-align:center; }
+  #toast.show { opacity:1; } #toast.err { background:var(--red); color:#fff; } #toast.ok { background:var(--green); color:#fff; }
+  ol { margin:8px 0 0 18px; padding:0; } li { margin:3px 0; }
+  code { background:var(--bg); padding:1px 5px; border-radius:4px; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Price tracker</h1>
+    <div class="head-actions">
+      <button id="runBtn" class="ghost" title="Start a check on GitHub now">Run now</button>
+      <button id="settingsBtn" class="ghost">Settings</button>
     </div>
+  </header>
 
-    <div class="savebar" id="savebar">
-      <div class="in">
-        <span id="dirtyMsg" class="muted">Unsaved changes</span>
-        <span style="display: flex; gap: 8px">
-          <button id="discardBtn" class="ghost">Discard</button>
-          <button id="saveBtn">Save to GitHub</button>
-        </span>
-      </div>
+  <section id="settings" class="card hidden">
+    <div class="grid" style="grid-template-columns:1fr 1fr 120px;">
+      <div><label for="cfgOwner">GitHub user / org</label><input id="cfgOwner" type="text" placeholder="your-username"></div>
+      <div><label for="cfgRepo">Repository</label><input id="cfgRepo" type="text" placeholder="price-tracker"></div>
+      <div><label for="cfgBranch">Branch</label><input id="cfgBranch" type="text" value="main"></div>
+      <div style="grid-column:1/-1"><label for="cfgToken">Access token</label><input id="cfgToken" type="password" placeholder="github_pat_..." autocomplete="off"></div>
     </div>
-    <div id="toast"></div>
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button id="cfgSave">Save settings</button>
+      <button id="cfgClear" class="ghost">Forget token</button>
+    </div>
+    <details open style="margin-top:12px;">
+      <summary>How to create the token (once)</summary>
+      <ol class="small">
+        <li>GitHub → Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate new token.</li>
+        <li>Repository access: <b>Only select repositories</b> and pick just this repo.</li>
+        <li>Permissions: <b>Contents: Read and write</b>. For the Run now button also <b>Actions: Read and write</b>.</li>
+        <li>Paste it above. It is stored only in this browser (localStorage) and sent only to api.github.com.</li>
+      </ol>
+    </details>
+  </section>
 
-    <script>
-      // <helpers>
-      function cleanUrl(u) {
-        try {
-          const x = new URL(String(u).trim());
-          if (!/^https?:$/.test(x.protocol)) return null;
-          [...x.searchParams.keys()].forEach((k) => {
-            if (/^utm_/i.test(k) || /^(fbclid|gclid|mc_eid)$/i.test(k))
-              x.searchParams.delete(k);
-          });
-          x.hash = "";
-          return x.toString();
-        } catch {
-          return null;
-        }
-      }
-      function nameFromUrl(u) {
-        const x = new URL(u);
-        const seg = x.pathname.split("/").filter(Boolean).pop() || x.hostname;
-        const n = seg
-          .replace(/\.(html?|php|aspx?)$/i, "")
-          .replace(/-p\d+$/i, "")
-          .replace(/[-_]+/g, " ")
-          .trim();
-        return n ? n.charAt(0).toUpperCase() + n.slice(1) : x.hostname;
-      }
-      const KNOWN = [
-        "url",
-        "name",
-        "target",
-        "selector",
-        "render",
-        "guessFromText",
-        "skip",
-      ];
-      function cleanProduct(p) {
-        const o = { url: p.url, name: p.name };
-        if (
-          p.target !== undefined &&
-          p.target !== null &&
-          p.target !== "" &&
-          !Number.isNaN(Number(p.target))
-        )
-          o.target = Number(p.target);
-        if (p.selector) o.selector = p.selector;
-        for (const k of ["render", "guessFromText", "skip"])
-          if (p[k]) o[k] = true;
-        for (const k of Object.keys(p)) if (!KNOWN.includes(k)) o[k] = p[k]; // keep fields this page doesn't know
-        return o;
-      }
-      function serializeProducts(list) {
-        return JSON.stringify(list.map(cleanProduct), null, 2) + "\n";
-      }
-      const toB64 = (s) => {
-        let b = "";
-        new TextEncoder()
-          .encode(s)
-          .forEach((c) => (b += String.fromCharCode(c)));
-        return btoa(b);
-      };
-      const fromB64 = (s) =>
-        new TextDecoder().decode(
-          Uint8Array.from(atob(s.replace(/\s/g, "")), (c) => c.charCodeAt(0)),
-        );
-      const fmt = (n) =>
-        Number(n).toLocaleString("en-US", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-      function ago(iso) {
-        const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-        if (m < 1) return "just now";
-        if (m < 60) return m + " min ago";
-        if (m < 1440) return Math.round(m / 60) + " h ago";
-        return Math.round(m / 1440) + " d ago";
-      }
-      // </helpers>
+  <section class="card">
+    <form id="addForm" class="grid add-grid" autocomplete="off">
+      <div class="add-url"><label for="newUrl">Product link</label><input id="newUrl" type="url" placeholder="https://shop.com/product/..." required></div>
+      <div><label for="newName">Name (optional)</label><input id="newName" type="text" placeholder="Taken from the link if empty"></div>
+      <div><label for="newTarget">Target price (optional)</label><input id="newTarget" type="number" step="0.01" min="0" placeholder="e.g. 120"></div>
+      <div></div>
+      <button type="submit">Add</button>
+    </form>
+  </section>
 
-      const KEY = "price-tracker-manager";
-      const $ = (s) => document.querySelector(s);
-      let cfg = null;
-      try {
-        cfg = JSON.parse(localStorage.getItem(KEY) || "null");
-      } catch {}
-      let products = [],
-        state = {},
-        sha = null,
-        original = "[]\n";
+  <section id="list"></section>
+</div>
 
-      function toast(msg, kind) {
-        const t = $("#toast");
-        t.textContent = msg;
-        t.className = "show " + (kind || "");
-        clearTimeout(toast.t);
-        toast.t = setTimeout(() => (t.className = ""), 5000);
-      }
+<div class="savebar" id="savebar">
+  <div class="in">
+    <span id="dirtyMsg" class="muted">Unsaved changes</span>
+    <span style="display:flex; gap:8px;">
+      <button id="discardBtn" class="ghost">Discard</button>
+      <button id="saveBtn">Save to GitHub</button>
+    </span>
+  </div>
+</div>
+<div id="toast"></div>
 
-      function h(tag, props = {}, ...kids) {
-        const e = document.createElement(tag);
-        for (const [k, v] of Object.entries(props)) {
-          if (k === "class") e.className = v;
-          else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
-          else if (k === "checked" || k === "value" || k === "disabled")
-            e[k] = v;
-          else e.setAttribute(k, v);
-        }
-        for (const c of kids.flat()) {
-          if (c == null || c === false) continue;
-          e.append(c.nodeType ? c : document.createTextNode(c));
-        }
-        return e;
-      }
+<script>
+// <helpers>
+function cleanUrl(u) {
+  try {
+    const x = new URL(String(u).trim());
+    if (!/^https?:$/.test(x.protocol)) return null;
+    [...x.searchParams.keys()].forEach((k) => {
+      if (/^utm_/i.test(k) || /^(fbclid|gclid|mc_eid)$/i.test(k)) x.searchParams.delete(k);
+    });
+    x.hash = "";
+    return x.toString();
+  } catch { return null; }
+}
+function nameFromUrl(u) {
+  const x = new URL(u);
+  const seg = x.pathname.split("/").filter(Boolean).pop() || x.hostname;
+  const n = seg.replace(/\.(html?|php|aspx?)$/i, "").replace(/-p\d+$/i, "").replace(/[-_]+/g, " ").trim();
+  return n ? n.charAt(0).toUpperCase() + n.slice(1) : x.hostname;
+}
+const KNOWN = ["url", "name", "target", "selector", "render", "guessFromText", "skip"];
+function cleanProduct(p) {
+  const o = { url: p.url, name: p.name };
+  if (p.target !== undefined && p.target !== null && p.target !== "" && !Number.isNaN(Number(p.target))) o.target = Number(p.target);
+  if (p.selector) o.selector = p.selector;
+  for (const k of ["render", "guessFromText", "skip"]) if (p[k]) o[k] = true;
+  for (const k of Object.keys(p)) if (!KNOWN.includes(k)) o[k] = p[k]; // keep fields this page doesn't know
+  return o;
+}
+function serializeProducts(list) { return JSON.stringify(list.map(cleanProduct), null, 2) + "\n"; }
+const toB64 = (s) => { let b = ""; new TextEncoder().encode(s).forEach((c) => (b += String.fromCharCode(c))); return btoa(b); };
+const fromB64 = (s) => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g, "")), (c) => c.charCodeAt(0)));
+const fmt = (n) => Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function ago(iso) {
+  const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return m + " min ago";
+  if (m < 1440) return Math.round(m / 60) + " h ago";
+  return Math.round(m / 1440) + " d ago";
+}
+// </helpers>
 
-      async function gh(path, opts = {}, raw = false) {
-        return fetch(
-          `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/${path}`,
-          {
-            ...opts,
-            headers: {
-              Authorization: `Bearer ${cfg.token}`,
-              Accept: raw
-                ? "application/vnd.github.raw+json"
-                : "application/vnd.github+json",
-              "X-GitHub-Api-Version": "2022-11-28",
-              ...(opts.headers || {}),
-            },
-          },
-        );
-      }
-      async function httpError(r) {
-        let m = "";
-        try {
-          m = (await r.json()).message || "";
-        } catch {}
-        const hint =
-          r.status === 401
-            ? "Token is invalid or expired."
-            : r.status === 403
-              ? "Token lacks permission (or rate limited)."
-              : r.status === 404
-                ? "Repo, branch or file not found, or the token has no access to it."
-                : m;
-        return new Error(`GitHub ${r.status}: ${hint}`);
-      }
+const KEY = "price-tracker-manager";
+const $ = (s) => document.querySelector(s);
+let cfg = null;
+try { cfg = JSON.parse(localStorage.getItem(KEY) || "null"); } catch {}
+let products = [], state = {}, sha = null, original = "[]\n";
+let loaded = false, loadError = "";
 
-      async function loadAll() {
-        if (!cfg || !cfg.token) {
-          openSettings();
-          $("#list").replaceChildren();
-          return;
-        }
-        $("#list").replaceChildren(h("p", { class: "muted" }, "Loading…"));
-        try {
-          const ref = encodeURIComponent(cfg.branch || "main");
-          const r = await gh(`contents/products.json?ref=${ref}`);
-          if (r.status === 404) {
-            products = [];
-            sha = null;
-          } else if (!r.ok) throw await httpError(r);
-          else {
-            const j = await r.json();
-            sha = j.sha;
-            products = JSON.parse(fromB64(j.content));
-          }
-          original = serializeProducts(products);
-          const s = await gh(`contents/state.json?ref=${ref}`, {}, true);
-          state = s.ok ? JSON.parse(await s.text()) : {};
-        } catch (e) {
-          toast(e.message, "err");
-        }
-        render();
-        updateDirty();
-      }
+function toast(msg, kind) {
+  const t = $("#toast");
+  t.textContent = msg; t.className = "show " + (kind || "");
+  clearTimeout(toast.t); toast.t = setTimeout(() => (t.className = ""), 5000);
+}
 
-      async function save() {
-        $("#saveBtn").disabled = true;
-        try {
-          const body = {
-            message: "Update products via manager",
-            content: toB64(serializeProducts(products)),
-            branch: cfg.branch || "main",
-          };
-          if (sha) body.sha = sha;
-          const r = await gh("contents/products.json", {
-            method: "PUT",
-            body: JSON.stringify(body),
-          });
-          if (r.status === 409 || r.status === 422) {
-            toast(
-              "products.json changed on GitHub since you loaded it. Reloaded it; please redo your edit.",
-              "err",
-            );
-            await loadAll();
-            return;
-          }
-          if (!r.ok) throw await httpError(r);
-          sha = (await r.json()).content.sha;
-          original = serializeProducts(products);
-          toast("Saved. The next run will pick it up.", "ok");
-        } catch (e) {
-          toast(e.message, "err");
-        }
-        $("#saveBtn").disabled = false;
-        updateDirty();
-      }
+function h(tag, props = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (k === "checked" || k === "value" || k === "disabled") e[k] = v;
+    else e.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) { if (c == null || c === false) continue; e.append(c.nodeType ? c : document.createTextNode(c)); }
+  return e;
+}
 
-      const isDirty = () => serializeProducts(products) !== original;
-      function updateDirty() {
-        $("#savebar").classList.toggle("show", isDirty());
-      }
+async function gh(path, opts = {}, raw = false) {
+  return fetch(`https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/${path}`, {
+    ...opts,
+    headers: {
+      Authorization: `Bearer ${cfg.token}`,
+      Accept: raw ? "application/vnd.github.raw+json" : "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      ...(opts.headers || {}),
+    },
+  });
+}
+async function httpError(r) {
+  let m = ""; try { m = (await r.json()).message || ""; } catch {}
+  const hint = r.status === 401 ? "Token is invalid or expired."
+    : r.status === 403 ? "Token lacks permission (or rate limited)."
+    : r.status === 404 ? "Repo, branch or file not found, or the token has no access to it."
+    : m;
+  return new Error(`GitHub ${r.status}: ${hint}`);
+}
 
-      function priceInfo(p) {
-        const s = state[p.url];
-        if (!s || s.lastPrice == null)
-          return h(
-            "div",
-            { class: "price-box" },
-            h("div", { class: "price none" }, "Not checked yet"),
-          );
-        const hit =
-          p.target !== undefined &&
-          p.target !== "" &&
-          p.target !== null &&
-          s.lastPrice <= Number(p.target);
-        const meta = [];
-        if (s.lowest != null) meta.push("lowest " + fmt(s.lowest));
-        const last =
-          s.history && s.history.length
-            ? s.history[s.history.length - 1].t
-            : null;
-        if (last) meta.push("checked " + ago(last));
-        return h(
-          "div",
-          { class: "price-box" },
-          h(
-            "div",
-            { class: "price" + (hit ? " hit" : "") },
-            fmt(s.lastPrice) + (s.currency ? " " + s.currency : ""),
-          ),
-          h("div", { class: "muted small" }, meta.join(" · ")),
-          s.failures > 0 &&
-            h(
-              "div",
-              { class: "warn small" },
-              `last ${s.failures} check(s) failed`,
-            ),
-        );
-      }
+async function loadAll() {
+  if (!cfg || !cfg.token) { openSettings(); $("#list").replaceChildren(); return; }
+  $("#list").replaceChildren(h("p", { class: "muted" }, "Loading…"));
+  loaded = false; loadError = "";
+  try {
+    const ref = encodeURIComponent(cfg.branch || "main");
+    const r = await gh(`contents/products.json?ref=${ref}`);
+    if (r.status === 404) {
+      // 404 can mean "file missing" OR "wrong branch / no access". Only the first is safe to treat as empty.
+      const b = await gh(`branches/${encodeURIComponent(cfg.branch || "main")}`);
+      if (!b.ok) throw await httpError(b);
+      products = []; sha = null;
+    } else if (!r.ok) throw await httpError(r);
+    else { const j = await r.json(); sha = j.sha; products = JSON.parse(fromB64(j.content)); }
+    original = serializeProducts(products);
+    const s = await gh(`contents/state.json?ref=${ref}`, {}, true);
+    state = s.ok ? JSON.parse(await s.text()) : {};
+    loaded = true;
+  } catch (e) {
+    loaded = false; loadError = e.message;
+    products = []; sha = null; original = "[]\n"; state = {};
+    toast(e.message, "err");
+  }
+  render(); updateDirty();
+}
 
-      function row(p) {
-        const el = h("div", { class: "card row" + (p.skip ? " paused" : "") });
-        el.append(
-          h(
-            "div",
-            {},
-            h("input", {
-              type: "text",
-              class: "name",
-              value: p.name || "",
-              placeholder: "Name",
-              "aria-label": "Name",
-              oninput: (e) => {
-                p.name = e.target.value;
-                updateDirty();
-              },
-            }),
-            h(
-              "a",
-              {
-                class: "url",
-                href: p.url,
-                target: "_blank",
-                rel: "noopener",
-                title: p.url,
-              },
-              p.url,
-            ),
-          ),
-          priceInfo(p),
-          h(
-            "div",
-            { class: "controls" },
-            h(
-              "div",
-              { class: "t" },
-              h("label", {}, "Target price"),
-              h("input", {
-                type: "number",
-                step: "0.01",
-                min: "0",
-                value: p.target ?? "",
-                placeholder: "none",
-                oninput: (e) => {
-                  p.target = e.target.value === "" ? undefined : e.target.value;
-                  updateDirty();
-                },
-              }),
-            ),
-            h(
-              "label",
-              { class: "check" },
-              h("input", {
-                type: "checkbox",
-                checked: !!p.skip,
-                onchange: (e) => {
-                  p.skip = e.target.checked;
-                  el.classList.toggle("paused", p.skip);
-                  updateDirty();
-                },
-              }),
-              "Pause",
-            ),
-            h(
-              "button",
-              {
-                class: "danger",
-                type: "button",
-                style: "margin-left:auto",
-                onclick: () => {
-                  products.splice(products.indexOf(p), 1);
-                  render();
-                  updateDirty();
-                },
-              },
-              "Delete",
-            ),
-          ),
-          h(
-            "details",
-            {},
-            h("summary", {}, "Advanced"),
-            h(
-              "div",
-              { class: "adv" },
-              h(
-                "div",
-                {},
-                h("label", {}, "CSS selector for the price (optional)"),
-                h("input", {
-                  type: "text",
-                  value: p.selector || "",
-                  placeholder: ".price-now",
-                  oninput: (e) => {
-                    p.selector = e.target.value;
-                    updateDirty();
-                  },
-                }),
-              ),
-              h(
-                "label",
-                { class: "check" },
-                h("input", {
-                  type: "checkbox",
-                  checked: !!p.render,
-                  onchange: (e) => {
-                    p.render = e.target.checked;
-                    updateDirty();
-                  },
-                }),
-                "Load in a real browser first (for prices loaded by JavaScript)",
-              ),
-              h(
-                "label",
-                { class: "check" },
-                h("input", {
-                  type: "checkbox",
-                  checked: !!p.guessFromText,
-                  onchange: (e) => {
-                    p.guessFromText = e.target.checked;
-                    updateDirty();
-                  },
-                }),
-                "Guess the price from the page text (last resort)",
-              ),
-            ),
-          ),
-        );
-        return el;
-      }
+async function save() {
+  if (!loaded) return toast("Nothing saved: products.json isn't loaded.", "err");
+  $("#saveBtn").disabled = true;
+  try {
+    const body = { message: "Update products via manager", content: toB64(serializeProducts(products)), branch: cfg.branch || "main" };
+    if (sha) body.sha = sha;
+    const r = await gh("contents/products.json", { method: "PUT", body: JSON.stringify(body) });
+    if (r.status === 409 || r.status === 422) {
+      toast("products.json changed on GitHub since you loaded it. Reloaded it; please redo your edit.", "err");
+      await loadAll(); return;
+    }
+    if (!r.ok) throw await httpError(r);
+    sha = (await r.json()).content.sha;
+    original = serializeProducts(products);
+    toast("Saved. The next run will pick it up.", "ok");
+  } catch (e) { toast(e.message, "err"); }
+  $("#saveBtn").disabled = false; updateDirty();
+}
 
-      function render() {
-        const list = $("#list");
-        list.replaceChildren();
-        if (!products.length) {
-          list.append(
-            h(
-              "p",
-              { class: "muted" },
-              "No products yet. Add your first link above.",
-            ),
-          );
-          return;
-        }
-        products.forEach((p) => list.append(row(p)));
-      }
+const isDirty = () => serializeProducts(products) !== original;
+function updateDirty() { $("#savebar").classList.toggle("show", isDirty()); }
 
-      // ---------- events ----------
-      $("#addForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        if (!cfg || !cfg.token) {
-          openSettings();
-          return;
-        }
-        const url = cleanUrl($("#newUrl").value);
-        if (!url)
-          return toast(
-            "That doesn't look like a valid link (it must start with https://).",
-            "err",
-          );
-        if (products.some((p) => p.url === url))
-          return toast("That link is already in the list.", "err");
-        const t = $("#newTarget").value.trim();
-        if (t !== "" && Number.isNaN(Number(t)))
-          return toast("Target must be a number.", "err");
-        const p = { url, name: $("#newName").value.trim() || nameFromUrl(url) };
-        if (t !== "") p.target = Number(t);
-        products.unshift(p);
-        e.target.reset();
-        render();
-        updateDirty();
-        toast("Added. Click “Save to GitHub” to keep it.", "ok");
-      });
+function priceInfo(p) {
+  const s = state[p.url];
+  if (!s || s.lastPrice == null) return h("div", { class: "price-box" }, h("div", { class: "price none" }, "Not checked yet"));
+  const hit = p.target !== undefined && p.target !== "" && p.target !== null && s.lastPrice <= Number(p.target);
+  const meta = [];
+  if (s.lowest != null) meta.push("lowest " + fmt(s.lowest));
+  const last = s.history && s.history.length ? s.history[s.history.length - 1].t : null;
+  if (last) meta.push("checked " + ago(last));
+  return h("div", { class: "price-box" },
+    h("div", { class: "price" + (hit ? " hit" : "") }, fmt(s.lastPrice) + (s.currency ? " " + s.currency : "")),
+    h("div", { class: "muted small" }, meta.join(" · ")),
+    s.failures > 0 && h("div", { class: "warn small" }, `last ${s.failures} check(s) failed`));
+}
 
-      $("#saveBtn").addEventListener("click", save);
-      $("#discardBtn").addEventListener("click", () => {
-        products = JSON.parse(original);
-        render();
-        updateDirty();
-      });
+function row(p) {
+  const el = h("div", { class: "card row" + (p.skip ? " paused" : "") });
+  el.append(
+    h("div", {},
+      h("input", { type: "text", class: "name", value: p.name || "", placeholder: "Name", "aria-label": "Name",
+        oninput: (e) => { p.name = e.target.value; updateDirty(); } }),
+      h("a", { class: "url", href: p.url, target: "_blank", rel: "noopener", title: p.url }, p.url)),
+    priceInfo(p),
+    h("div", { class: "controls" },
+      h("div", { class: "t" }, h("label", {}, "Target price"),
+        h("input", { type: "number", step: "0.01", min: "0", value: p.target ?? "", placeholder: "none",
+          oninput: (e) => { p.target = e.target.value === "" ? undefined : e.target.value; updateDirty(); } })),
+      h("label", { class: "check" }, h("input", { type: "checkbox", checked: !!p.skip,
+        onchange: (e) => { p.skip = e.target.checked; el.classList.toggle("paused", p.skip); updateDirty(); } }), "Pause"),
+      h("button", { class: "danger", type: "button", style: "margin-left:auto",
+        onclick: () => { products.splice(products.indexOf(p), 1); render(); updateDirty(); } }, "Delete")),
+    h("details", {},
+      h("summary", {}, "Advanced"),
+      h("div", { class: "adv" },
+        h("div", {}, h("label", {}, "CSS selector for the price (optional)"),
+          h("input", { type: "text", value: p.selector || "", placeholder: ".price-now",
+            oninput: (e) => { p.selector = e.target.value; updateDirty(); } })),
+        h("label", { class: "check" }, h("input", { type: "checkbox", checked: !!p.render,
+          onchange: (e) => { p.render = e.target.checked; updateDirty(); } }), "Load in a real browser first (for prices loaded by JavaScript)"),
+        h("label", { class: "check" }, h("input", { type: "checkbox", checked: !!p.guessFromText,
+          onchange: (e) => { p.guessFromText = e.target.checked; updateDirty(); } }), "Guess the price from the page text (last resort)"))));
+  return el;
+}
 
-      $("#runBtn").addEventListener("click", async () => {
-        if (!cfg || !cfg.token) return openSettings();
-        if (
-          isDirty() &&
-          !confirm(
-            "You have unsaved changes, and the run won't include them. Run anyway?",
-          )
-        )
-          return;
-        try {
-          const r = await gh("actions/workflows/track.yml/dispatches", {
-            method: "POST",
-            body: JSON.stringify({ ref: cfg.branch || "main" }),
-          });
-          if (r.status === 204)
-            toast(
-              "Run started. Results arrive by email in a minute or two.",
-              "ok",
-            );
-          else
-            throw new Error(
-              (await httpError(r)).message +
-                " (Run now needs the “Actions: Read and write” permission.)",
-            );
-        } catch (e) {
-          toast(e.message, "err");
-        }
-      });
+function render() {
+  const list = $("#list");
+  list.replaceChildren();
+  if (!loaded) {
+    if (cfg && cfg.token) list.append(h("div", { class: "card" },
+      h("p", { class: "warn" }, "Couldn't load products.json, so editing is turned off to avoid overwriting it."),
+      loadError && h("p", { class: "muted small" }, loadError),
+      h("button", { type: "button", onclick: loadAll }, "Try again")));
+    return;
+  }
+  if (!products.length) { list.append(h("p", { class: "muted" }, "No products yet. Add your first link above.")); return; }
+  products.forEach((p) => list.append(row(p)));
+}
 
-      function openSettings() {
-        $("#settings").classList.remove("hidden");
-        $("#cfgOwner").value = (cfg && cfg.owner) || "";
-        $("#cfgRepo").value = (cfg && cfg.repo) || "";
-        $("#cfgBranch").value = (cfg && cfg.branch) || "main";
-        $("#cfgToken").value = (cfg && cfg.token) || "";
-      }
-      $("#settingsBtn").addEventListener(
-        "click",
-        () => $("#settings").classList.toggle("hidden") || openSettings(),
-      );
-      $("#cfgSave").addEventListener("click", () => {
-        const next = {
-          owner: $("#cfgOwner").value.trim(),
-          repo: $("#cfgRepo").value.trim(),
-          branch: $("#cfgBranch").value.trim() || "main",
-          token: $("#cfgToken").value.trim(),
-        };
-        if (!next.owner || !next.repo || !next.token)
-          return toast("Fill in user, repository and token.", "err");
-        cfg = next;
-        localStorage.setItem(KEY, JSON.stringify(cfg));
-        $("#settings").classList.add("hidden");
-        loadAll();
-      });
-      $("#cfgClear").addEventListener("click", () => {
-        localStorage.removeItem(KEY);
-        cfg = null;
-        $("#cfgToken").value = "";
-        products = [];
-        render();
-        updateDirty();
-        toast("Token removed from this browser.", "ok");
-      });
-      window.addEventListener("beforeunload", (e) => {
-        if (isDirty()) {
-          e.preventDefault();
-          e.returnValue = "";
-        }
-      });
+// ---------- events ----------
+$("#addForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (!cfg || !cfg.token) { openSettings(); return; }
+  if (!loaded) return toast("products.json isn't loaded yet. Fix the error shown, then try again.", "err");
+  const url = cleanUrl($("#newUrl").value);
+  if (!url) return toast("That doesn't look like a valid link (it must start with https://).", "err");
+  if (products.some((p) => p.url === url)) return toast("That link is already in the list.", "err");
+  const t = $("#newTarget").value.trim();
+  if (t !== "" && Number.isNaN(Number(t))) return toast("Target must be a number.", "err");
+  const p = { url, name: $("#newName").value.trim() || nameFromUrl(url) };
+  if (t !== "") p.target = Number(t);
+  products.unshift(p);
+  e.target.reset(); render(); updateDirty();
+  toast("Added. Click “Save to GitHub” to keep it.", "ok");
+});
 
-      loadAll();
-    </script>
-  </body>
+$("#saveBtn").addEventListener("click", save);
+$("#discardBtn").addEventListener("click", () => { products = JSON.parse(original); render(); updateDirty(); });
+
+$("#runBtn").addEventListener("click", async () => {
+  if (!cfg || !cfg.token) return openSettings();
+  if (isDirty() && !confirm("You have unsaved changes, and the run won't include them. Run anyway?")) return;
+  try {
+    const r = await gh("actions/workflows/track.yml/dispatches", { method: "POST", body: JSON.stringify({ ref: cfg.branch || "main" }) });
+    if (r.status === 204) toast("Run started. Results arrive by email in a minute or two.", "ok");
+    else throw new Error((await httpError(r)).message + " (Run now needs the “Actions: Read and write” permission.)");
+  } catch (e) { toast(e.message, "err"); }
+});
+
+function openSettings() {
+  $("#settings").classList.remove("hidden");
+  $("#cfgOwner").value = (cfg && cfg.owner) || ""; $("#cfgRepo").value = (cfg && cfg.repo) || "";
+  $("#cfgBranch").value = (cfg && cfg.branch) || "main"; $("#cfgToken").value = (cfg && cfg.token) || "";
+}
+$("#settingsBtn").addEventListener("click", () => $("#settings").classList.toggle("hidden") || openSettings());
+$("#cfgSave").addEventListener("click", () => {
+  const next = { owner: $("#cfgOwner").value.trim(), repo: $("#cfgRepo").value.trim(),
+                 branch: $("#cfgBranch").value.trim() || "main", token: $("#cfgToken").value.trim() };
+  if (!next.owner || !next.repo || !next.token) return toast("Fill in user, repository and token.", "err");
+  cfg = next; localStorage.setItem(KEY, JSON.stringify(cfg));
+  $("#settings").classList.add("hidden"); loadAll();
+});
+$("#cfgClear").addEventListener("click", () => {
+  localStorage.removeItem(KEY); cfg = null; $("#cfgToken").value = ""; products = []; render(); updateDirty();
+  toast("Token removed from this browser.", "ok");
+});
+window.addEventListener("beforeunload", (e) => { if (isDirty()) { e.preventDefault(); e.returnValue = ""; } });
+
+loadAll();
+</script>
+</body>
 </html>
